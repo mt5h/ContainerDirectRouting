@@ -1,6 +1,6 @@
 # How it works
 
-Build minonApp and cntSpawner 
+Build minionApp and cntSpawner 
 
 ```
 cd minionApp

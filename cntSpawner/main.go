@@ -11,7 +11,6 @@ import (
 	"net/http"
 )
 
-
 type Instance struct {
 	Name    string            `from: "Name", json:"name" binding:"required"`
 	Network string            `from: "Network", json:"network" binding:"required"`
@@ -45,7 +44,6 @@ func (containerInstance *Instance) envDockerFormat() []string {
 	return res
 
 }
-
 
 func createContainer(containerInstance Instance) (string, error) {
 	ctx := context.Background()
@@ -135,7 +133,6 @@ func deleteContainer(containerId string) error {
 		return err
 	}
 
-
 	cli.ContainerRemove(ctx, containerId, types.ContainerRemoveOptions{})
 	fmt.Println("Success")
 	return nil
@@ -197,31 +194,3 @@ func main() {
 
 	router.Run(":8008")
 }
-
-/*
-  labels := map[string]string{}
-  labels["traefik.enable"] = "true"
-  labels[fmt.Sprintf("traefik.http.routers.%s.rule",containerName)] = fmt.Sprintf("Path(`/%s`)",containerName)
-  labels[fmt.Sprintf("traefik.http.routers.%s.entrypoints",containerName)] = "web"
-*/
-
-//env := []string{fmt.Sprintf("INSTANCE=%s",containerName)}
-/*
-	labels := map[string]string{}
-	labels["traefik.enable"] = "true"
-	labels[fmt.Sprintf("traefik.http.routers.%s.rule", containerName)] = fmt.Sprintf("Path(`/%s`)", containerName)
-	labels[fmt.Sprintf("traefik.http.routers.%s.entrypoints", containerName)] = "web"
-
-	envs := map[string]string{
-		"INSTANCE": containerName,
-		"TEST":     "123",
-	}
-
-	instance := Instance{
-		Name:    containerName,
-		Network: "example",
-		Labels:  labels,
-		Envs:    envs,
-		Image:   "app-instance",
-	}
-*/
