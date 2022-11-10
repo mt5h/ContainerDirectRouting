@@ -1,6 +1,6 @@
 ## Architecture
 
-This app span multiple containers of the minion app reachable directly trought the traefik proxy.
+This app spawn multiple containers of the minion app reachable directly trought the traefik proxy.
 
 In order to to that the minion app accept requests for a specific path with the container name in it (but can be something else), like this:
 ```
