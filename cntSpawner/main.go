@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type Instance struct {
@@ -121,6 +123,24 @@ func listContainers() ([]containerSummary, error) {
 	return containerList, nil
 }
 
+
+func startContainer(containerId string) error {
+
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
+	defer cli.Close()
+	if err := cli.ContainerStart(ctx, containerId, types.ContainerStartOptions{}); err != nil {
+		return err
+	}
+
+  return err
+
+}
+
 func deleteContainer(containerId string) error {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -173,12 +193,51 @@ func createContainerWrapper(c *gin.Context) {
 
 	if err == nil {
 		fmt.Println("no errors")
-		c.JSON(http.StatusOK, gin.H{"id": containerID})
+    c.JSON(http.StatusOK, gin.H{"id": containerID})
 	} else {
 		fmt.Println(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	}
 
+}
+
+// catch request to stopped containers 
+// if the container does exist resume it
+func resumeOrDie(c *gin.Context) {
+
+  containerName := c.Param("container-name")
+  if containerName != "" {
+    containerList, err := listContainers()
+
+    if err == nil{
+      // check if we have the requested container
+      for _,cnt := range(containerList){
+        if cnt.ContainerName == containerName {
+          // check if the requested container is stopped and start it again
+          if cnt.ContainerState == "exited" {
+            
+            err := startContainer(cnt.ContainerID)
+
+            if err != nil {
+                c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+            } else {
+                // HACK: sleep for 3 second in order to wait for the API to come up
+                // TODO find a reliable way to do this eg by making a direct HTTP API request to the container
+                time.Sleep(3 * time.Second)
+                c.Redirect(301, c.Request.URL.String())
+                //c.JSON(http.StatusOK, gin.H{"requested": containerName, "status": "started"})
+            }
+
+          }
+          return
+        }
+      }
+   		c.JSON(http.StatusBadRequest, gin.H{"error": "container not found"})
+      return
+    }
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    return
+  }
 }
 
 func main() {
@@ -191,6 +250,11 @@ func main() {
 		v1.GET("/", listContainersWrapper)
 		v1.DELETE("/:containerid", deleteContainerWrapper)
 	}
+
+  spawned := router.Group("/session")
+  {
+    spawned.GET("/:container-name/*action", resumeOrDie)
+  }
 
 	router.Run(":8008")
 }

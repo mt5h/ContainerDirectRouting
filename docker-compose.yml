@@ -18,16 +18,16 @@ services:
   spawner:
     image: "cntspawner:latest"
     container_name: "spawner"
-    ports:
-      - "8008:8008"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
-      - "mgmt"
+      - "traefiknet"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.spawner.entrypoints: "web"
+      traefik.http.routers.spawner.rule: "PathPrefix(\"/\")"
 
 networks:
   traefiknet:
     name: traefiknet
     attachable: true
-  mgmt:
-    name: mgmt

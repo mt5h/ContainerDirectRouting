@@ -2,7 +2,7 @@
 
 for i in {1..5}; do 
     response=$(curl -s --header "Content-Type: application/json" \
-      localhost/minion-$i/ping)
+      localhost/session/minion-$i/ping)
 
   if command -v jq > /dev/null 2>&1; then
     echo $response | jq
