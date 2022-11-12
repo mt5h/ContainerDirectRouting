@@ -1,4 +1,4 @@
-module minionApp
+module mock-app
 
 go 1.19
 

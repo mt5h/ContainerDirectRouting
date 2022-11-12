@@ -16,16 +16,19 @@ services:
     networks:
       - "traefiknet"
   spawner:
-    image: "cntspawner:latest"
+    image: "spawner:latest"
     container_name: "spawner"
+    ports:
+      - "8008:8008"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - "traefiknet"
+    
     labels:
       traefik.enable: "true"
       traefik.http.routers.spawner.entrypoints: "web"
-      traefik.http.routers.spawner.rule: "PathPrefix(\"/\")"
+      traefik.http.routers.spawner.rule: "PathPrefix(\"/session\")"
 
 networks:
   traefiknet:
