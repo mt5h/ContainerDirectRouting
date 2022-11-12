@@ -6,41 +6,52 @@ chmod +x build.sh
 # How to run
 
 ```
-docker run --rm -p 8008:8008 -v /var/run/docker.sock:/var/run/docker.sock  cntspawner
+docker run --rm -p 8008:8008 -v /var/run/docker.sock:/var/run/docker.sock spawner
 ```
 
 # How it works
-The cntSpawer is a simple Docker APIs wrapper to create, list and delete containers.
+The spawer is a simple Docker APIs wrapper to create, list and delete containers.
 
 # Create a container
 
 ```
-curl  --header "Content-Type: application/json" \
-      --request POST \
-      --data \
-      '{ \
-      "name":"test-5", \
-      "network":"example", \
-      "image":"app-instance", \
-      "labels": \
-      { \
-      "traefik.enable": "true", \
-      "traefik.http.routers.test-5.entrypoints": "web", \
-      "traefik.http.routers.test-5.rule":"Path(`/test-5`)" \ 
-      }, \
-      "envs": {"INSTANCE":"test-5"}\
-      }' \
-localhost:8008/v1/
+baseurl='localhost:8008/deploy'
 
+generate_post_data()
+{
+  cat<<EOF
+  {
+  "name":"minion-$1",
+  "network":"traefiknet",
+  "image":"mock-app:latest",
+  "labels": {
+    "healthcheck": "http:\/\/minion-$1:9000\/status",
+    "traefik.enable": "true",
+    "traefik.http.routers.minion-$1.entrypoints": "web",
+    "traefik.http.routers.minion-$1.rule":"PathPrefix(\"/session/minion-$1/\")"
+  },
+  "envs": {"CONNSTR":"db $1", "IDLE":"1m"}
+  }
+EOF
+}
+
+
+
+for i in {1..5}; do
+response=$(curl -L -s --header "Content-Type: application/json" \
+     -X POST \
+     --data  "$(generate_post_data $i)" \
+     ${baseurl}/
+   )
 ```
 
 # Delete a container
 
 ```
-curl -XDELETE localhost:8008/v1/$container_id
+curl -XDELETE localhost:8008/deploy/$container_id
 ```
 # List containers
 
 ```
-curl localhost:8008/v1/
+curl localhost:8008/deploy/
 ```

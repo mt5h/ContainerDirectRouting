@@ -1,6 +1,7 @@
 ## Architecture
 
-This app span multiple containers of the mock-app reachable directly trought the traefik proxy.
+This app spawn multiple instances of the mock-app container and make the direcly reachable trought the traefik proxy.
+
 In order to do that the mock-app accept requests for a specific path with the container name in it (but can be something else), like this:
 
 ```
@@ -8,6 +9,7 @@ In order to do that the mock-app accept requests for a specific path with the co
 ```
 
 The traefik route will bind to the mock-app container with the rule PathPrefix(`/session/$container-name/`)
+
 If the container does not exist it needs to be created by making a POST to the /deploy API (see the example)
 
 ```
@@ -77,6 +79,7 @@ Move to the examples folder
 cd examples
 ./create-minions.sh
 ```
+
 Check the routes on traefik with the dashbord at localhost:8080
 
 ## Test your minions routing
@@ -94,18 +97,27 @@ Open your browser the go to:
 ```
 http://localhost/session/minion-3
 ```
+
 or launch again
 
 ```
 ./test-minions.sh
 ```
+
 The request will hang for a little and then the spawner will redirects you to the correct container. All the other request will work normally.
+
 The health-check internally checks the http://minion-x:9000/status API using the container networking and name resolution system, no ports of the mock-app need to be available outside the docker net.
+
 The only constraint is that you should put the spawner and the mock-app on the same docker network.
+
 If no health-check label is specified during the mock-app instance creation the redirect will wait for 2 seconds (by default), and the HTTP probe will be skipped.
+
 The only endpoint reachable from outside the container network should be the ones mapped in traefik.
+
 The spawner app /deploy API should be private. The /session/$container-name can be called from the outside to restore the container instance.
+
 If you want to write your application that intercept the /session/$container-name request you can make PUT to /deploy/$container-ID to ask the spawner to restart the instace for you (no auto redirect).
+
 
 ## Clean up
 
