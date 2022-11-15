@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# TODO
+# evaluate the creation of a single middleware
+# can we exclude mininion from the regex?
+
 baseurl='localhost:8008/deploy'
 
 generate_post_data()
@@ -13,13 +17,15 @@ generate_post_data()
     "healthcheck": "http:\/\/minion-$1:9000\/status",
     "traefik.enable": "true",
     "traefik.http.routers.minion-$1.entrypoints": "web",
-    "traefik.http.routers.minion-$1.rule":"PathPrefix(\"/session/minion-$1/\")"
+    "traefik.http.routers.minion-$1.rule": "PathPrefix(\"/minion-$1\")",
+    "traefik.http.routers.minion-$1.middlewares": "minion-$1-context",
+    "traefik.http.middlewares.minion-$1-context.replacepathregex.regex": "^/minion-$1(.*)",
+    "traefik.http.middlewares.minion-$1-context.replacepathregex.replacement": "\${1}"
   },
   "envs": {"CONNSTR":"db $1", "IDLE":"1m"}
   }
 EOF
 }
-
 
 
 for i in {1..5}; do 

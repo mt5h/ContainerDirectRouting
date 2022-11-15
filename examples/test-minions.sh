@@ -3,8 +3,9 @@
 baseurl='localhost'
 
 for i in {1..5}; do 
+    echo "testing: ${baseurl}/minion-$i/"
     response=$(curl -L -s --header "Content-Type: application/json" \
-      ${baseurl}/session/minion-$i/
+      "${baseurl}/minion-$i/"
     )
 
   if command -v jq > /dev/null 2>&1; then

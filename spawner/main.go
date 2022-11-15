@@ -23,6 +23,7 @@ func main() {
 	spawned := router.Group(fmt.Sprintf("/%s", utils.ContainerPrefix))
 	{
 		spawned.GET("/:container-name/*other", controllers.RestartContainer)
+		spawned.GET("/:container-name", controllers.RestartContainer)
 	}
 	router.Run(":8008")
 }

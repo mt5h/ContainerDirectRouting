@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net"
@@ -41,7 +40,7 @@ func main() {
 	timer1 := time.NewTimer(Idle)
 
 	// if a request is received reset the timer
-	instance := router.Group(fmt.Sprintf("session/%s", hostname))
+	instance := router.Group("/")
 	{
 		instance.GET("/", func(c *gin.Context) {
 
@@ -53,23 +52,21 @@ func main() {
 				"hostname":          hostname,
 				"IP address":        addr,
 				"connection string": instance_env,
+        "requested": c.Request.Host+c.Request.URL.Path,
 			})
 		})
-	}
 
-	healthCheck := router.Group("/")
-	{
-		healthCheck.GET("/status", func(c *gin.Context) {
+		instance.GET("/status", func(c *gin.Context) {
 			// insert a delay to make sure healthcheck is also delayed
 			time.Sleep(5 * time.Second)
 			delta := time.Now().Sub(startTime)
 			c.JSON(http.StatusOK, gin.H{
 				"status": "ok",
 				"left":   (Idle - delta).String(),
+        "requested": c.Request.Host+c.Request.URL.Path,
 			})
 		})
 	}
-
 	srv := &http.Server{
 		Addr:    ":9000",
 		Handler: router,
