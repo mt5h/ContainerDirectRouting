@@ -4,12 +4,15 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"spawner/controllers"
+	"spawner/build"
 	"spawner/utils"
 )
+
 
 func main() {
 
 	utils.LoadFlags()
+  build.LoadInfo()
 
 	router := gin.Default()
 	provisioning_v1 := router.Group("/deploy")

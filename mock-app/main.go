@@ -8,11 +8,15 @@ import (
 	"net/http"
 	"os"
 	"time"
+  "mock-app/build"
 )
 
 func main() {
-	instance_env := os.Getenv("CONNSTR")
+  build.LoadInfo()
+
+  instance_env := os.Getenv("CONNSTR")
 	IdleEnv := os.Getenv("IDLE")
+
 
 	startTime := time.Now()
 

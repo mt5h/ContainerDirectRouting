@@ -15,15 +15,17 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x ./mock-app/build.sh
+WORKDIR /app/mock-app
 
-RUN ./mock-app/build.sh
+RUN chmod +x ./build.sh
+
+RUN ./build.sh
 
 FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=base /app/_output/mock-app ./
+COPY --from=base /app/mock-app/_output/mock-app ./
 
 EXPOSE 9000
 

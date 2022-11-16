@@ -15,15 +15,17 @@ WORKDIR /app
 
 COPY . .
 
-RUN chmod +x ./spawner/build.sh
+WORKDIR /app/spawner
 
-RUN ./spawner/build.sh
+RUN chmod +x ./build.sh
+
+RUN ./build.sh
 
 FROM alpine:latest
 
 WORKDIR /app
 
-COPY --from=base /app/_output/spawner ./
+COPY --from=base /app/spawner/_output/spawner ./
 
 EXPOSE 8008
 
