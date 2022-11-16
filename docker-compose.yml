@@ -24,8 +24,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - "traefiknet"
-        #    command: ./spawner -container-prefix=''
-    
+#    command: ./spawner -container-prefix=''
     labels:
       traefik.enable: "true"
       traefik.http.routers.spawner.entrypoints: "web"
