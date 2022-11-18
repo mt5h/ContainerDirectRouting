@@ -24,14 +24,14 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - "traefiknet"
-#    command: ./spawner -container-prefix=''
+    command: ./spawner -container-prefix='foo'
     labels:
       traefik.enable: "true"
       traefik.http.routers.spawner.entrypoints: "web"
       traefik.http.routers.spawner.rule: "PathPrefix(`/`)"
-      traefik.http.routers.spawner.middlewares: "spawner-context"
-      traefik.http.middlewares.spawner-context.redirectregex.regex: "^http://localhost/deploy(.*)"
-      traefik.http.middlewares.spawner-context.redirectregex.replacement: "http://localhost/"
+      #      traefik.http.routers.spawner.middlewares: "spawner-context"
+      #      traefik.http.middlewares.spawner-context.redirectregex.regex: "^http://localhost/deploy(.*)"
+      #      traefik.http.middlewares.spawner-context.redirectregex.replacement: "http://localhost/"
 networks:
   traefiknet:
     name: traefiknet

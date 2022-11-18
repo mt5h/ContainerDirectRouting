@@ -1,3 +1,42 @@
+## Changelogs
+
+- This version set a cookie and match that into treafik.
+- No path matching needed. No rewritring.
+- The examples sets everything up correctly
+- Test with:
+
+```bash
+./build_project.sh
+docker compose up
+./examples/create-minions-cookie.sh
+./examples/test-minions-cookie.sh
+```
+or in a browser go to:
+http://localhost/minion-1
+wait 1 minute and test again
+If you change minion reset the cookies
+
+```bash
+./examples/test-minions-cookie.sh
+./examples/delete-minons.sh
+```
+# Call scheme
+```
+client  traefik  spawner   docker  mock-app
+|---------->|------->|         |         |
+|           |        |-------->|         |
+|           |        |         |--start->|
+|           |        |         |         |
+|           |        |---healthcheck---->|
+|           |        |<---200--+---------|
+|           |        |         |         |
+|<--redirect+--------|         |         |
+|    cookie |        |         |         |
+|           |        |         |         |
+|---------->|--------+---------+-------->|
+|           |        |         |         |
+```
+
 ## Architecture
 
 This app spawn multiple instances of the mock-app container and make the direcly reachable trought the traefik proxy.
