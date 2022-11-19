@@ -19,32 +19,43 @@ func main() {
 		log.Fatal("Set only one type of routing at the time")
 	}
 
-	router := gin.Default()
+	management := gin.Default()
 
 	// management endpoint
-	provisioning_v1 := router.Group("/deploy")
+	provisioning := management.Group("/deploy")
 	{
-		provisioning_v1.POST("/", controllers.CreateContainer)
-		provisioning_v1.GET("/", controllers.ListContainers)
-		provisioning_v1.PUT("/:container-id", controllers.StartContainer)
-		provisioning_v1.DELETE("/:container-id", controllers.DeleteContainer)
+		provisioning.POST("/", controllers.CreateContainer)
+		provisioning.GET("/", controllers.ListContainers)
+		provisioning.PUT("/:container-id", controllers.StartContainer)
+		provisioning.DELETE("/:container-id", controllers.DeleteContainer)
 	}
 
+	users := gin.Default()
 	// Path routing
 	if utils.PathRouting {
-		spawned := router.Group(fmt.Sprintf("/%s", utils.ContainerPrefix))
+		instances := users.Group(fmt.Sprintf("/%s", utils.ContainerPrefix))
 		{
-			spawned.GET("/:container-name/*other", controllers.PathRouting)
-			spawned.GET("/:container-name", controllers.PathRouting)
+			instances.GET("/:container-name/*any", controllers.PathRouting)
+			instances.GET("/:container-name", controllers.PathRouting)
 		}
 	}
 
+	// We have to handle:
+	// - request with a cookie:
+	//    - is valid -> container exists:
+	//      - is started -> handled by traefick
+	//      - is stopped -> container is started and the client is redirected to the root url <- spawner
+	//    - is invalid -> container doesn't exist -> redirect to the fallback site <- spawner
+	// - request has no cookie:
+	//   - redirect to the fallback url <- spawner
 	if utils.CookieRouting {
-		spawner := router.Group("/")
+		instances := users.Group("/")
 		{
-			spawner.GET("/:containerName", controllers.CookieRouting)
+			instances.GET("/*any", controllers.CookieRouting)
 		}
 	}
 
-	router.Run(":8008")
+	go management.Run(":8008")
+	users.Run(":8000")
+
 }

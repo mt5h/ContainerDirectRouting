@@ -24,14 +24,22 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - "traefiknet"
-    command: ./spawner -container-prefix='foo'
+    command: ./spawner  -cookie-fallback-url='http://localhost/home'
     labels:
       traefik.enable: "true"
       traefik.http.routers.spawner.entrypoints: "web"
       traefik.http.routers.spawner.rule: "PathPrefix(`/`)"
-      #      traefik.http.routers.spawner.middlewares: "spawner-context"
-      #      traefik.http.middlewares.spawner-context.redirectregex.regex: "^http://localhost/deploy(.*)"
-      #      traefik.http.middlewares.spawner-context.redirectregex.replacement: "http://localhost/"
+      traefik.http.services.spawner.loadbalancer.server.port: 8000
+  mock-home:
+    image: "mock-home:latest"
+    container_name: "mock-home"
+    networks:
+      - "traefiknet"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.mock-home.entrypoints: "web"
+      traefik.http.routers.mock-home.rule: "PathPrefix(`/home`)"
+      traefik.http.services.mock-home.loadbalancer.server.port: 8000
 networks:
   traefiknet:
     name: traefiknet

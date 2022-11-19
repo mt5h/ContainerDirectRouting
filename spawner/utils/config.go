@@ -13,6 +13,7 @@ var CookieKey string
 var CookieMaxAge int
 var CookieSecure bool
 var CookieHttpOnly bool
+var CookieFallBackUrl string
 func LoadFlags() {
 
   flag.BoolVar(&PathRouting, "use-path-routing", false, "Route to your spawned container using request path (see container prefix)")
@@ -24,7 +25,7 @@ func LoadFlags() {
   flag.IntVar(&CookieMaxAge, "cookie-max-age", 24*60*60, "Maxage set for the cookie used to route requests")
   flag.BoolVar(&CookieSecure, "cookie-secure", false, "Set cookie only over a secure connection")
   flag.BoolVar(&CookieHttpOnly, "cookie-http-only", true, "Exclude the cookie if the cookie-string is being generated for a non-HTTP API")
-
+  flag.StringVar(&CookieFallBackUrl, "cookie-fallback-url","http://localhost/home", "Set the url the client should be redirected to when the cookie is invalid or non-existent")
   flag.Parse()
 
 }

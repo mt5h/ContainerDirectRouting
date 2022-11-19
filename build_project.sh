@@ -22,9 +22,11 @@ fi
 
 docker build -t spawner:$tag -f ./spawner/Dockerfile .
 docker build -t mock-app:$tag -f ./mock-app/Dockerfile .
+docker build -t mock-home:$tag -f ./mock-home/Dockerfile .
 
 # mark the last built as latest
 if [ $tag != "latest" ]; then
   docker tag spawner:$tag spawner:latest
   docker tag mock-app:$tag mock-app:latest
+  docker tag mock-home:$tag mock-home:latest
 fi

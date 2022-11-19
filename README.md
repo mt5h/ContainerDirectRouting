@@ -1,8 +1,11 @@
 ## Changelogs
 
-- This version set a cookie and match that into treafik.
+- This version need a cookie and match that into treafik.
+- Your home app must set a cookie into the client with the name of the instance (Cookie: instace=minion-1)
 - No path matching needed. No rewritring.
 - The examples sets everything up correctly
+- Added the mock-home app to test redirects in case of cookie missing or wrong.
+- In the docker file you can set your app fallback url when the container is missing
 - Test with:
 
 ```bash
@@ -11,18 +14,45 @@ docker compose up
 ./examples/create-minions-cookie.sh
 ./examples/test-minions-cookie.sh
 ```
-or in a browser go to:
-http://localhost/minion-1
 wait 1 minute and test again
-If you change minion reset the cookies
 
 ```bash
 ./examples/test-minions-cookie.sh
 ./examples/delete-minons.sh
 ```
-# Call scheme
+# Application description cookie routing
+
+spawner:
+ - Port 8008 -> Create, list and destroy containers
+ - Port 8000 -> Accept clients requests and stats stopped containers if the cookie match
+
+ mock-app:
+ - Port 9000 -> Mocks your app. Has an health-check url to verify availability before redirects clients
+
+ mock-home:
+ - Port 8000 -> Mocks the home of your site that provides user registrtion/authentication (not implemented) and fallback in case of errors
+
+# Setup steps
+
+1) Your "Home app" must create the container using the spawner APIs on port 8008 (private API)
+2) The client should have a valid cookie indicating the desired container and call localhost/
+
+3.1) If the container is UP and the cookie is valid traefik performs the routing
+3.2) If the container is DOWN and the cookie is valid the spawner starts the container and redirect the client to localhost/
+3.3) If the client has no cookie or it is invalid, the client is redirected to the Home app at localhost/home 
+
+
+# Calls scheme
+
 ```
-client  traefik  spawner   docker  mock-app
+Mock-app exists but is stopped - client cookie is set
+
+client  traefik  spawner   docker  mock-app  mock-home
+
+|           |        |         |         |
+|           |        |         |         |
+|           |        |         |         |
+| cookie set|        |         |         |
 |---------->|------->|         |         |
 |           |        |-------->|         |
 |           |        |         |--start->|
@@ -31,13 +61,14 @@ client  traefik  spawner   docker  mock-app
 |           |        |<---200--+---------|
 |           |        |         |         |
 |<--redirect+--------|         |         |
-|    cookie |        |         |         |
 |           |        |         |         |
+| cookie set|        |         |         |
 |---------->|--------+---------+-------->|
+|           |        |         |         |
 |           |        |         |         |
 ```
 
-## Architecture
+## Architecture Path Routing 
 
 This app spawn multiple instances of the mock-app container and make the direcly reachable trought the traefik proxy.
 In order to do that the mock-app accept requests for a specific path with the container name in it (but can be something else), like this:

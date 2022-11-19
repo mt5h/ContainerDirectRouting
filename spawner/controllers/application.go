@@ -109,11 +109,22 @@ func PathRouting(c *gin.Context) {
 }
 
 func CookieRouting(c *gin.Context) {
-	containerName := c.Param("containerName")
+  instance, err := c.Cookie(utils.CookieKey)
+  // invalid or non existent cookie
+  if err != nil {
+    log.Printf("Request from %s, user agent: %s has the following error:%s\n",c.Request.RemoteAddr, c.Request.UserAgent(), err.Error())
+	  c.Redirect(http.StatusFound,utils.CookieFallBackUrl)
+    return
+  }
+  
 
-	err := RestartContainer(containerName)
+  log.Println("Asking for", instance)
+
+  // if the container exists start it  
+	err = RestartContainer(instance)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+    log.Printf("Request from %s, user agent: %s has the following error:%s\n",c.Request.RemoteAddr, c.Request.UserAgent(), err.Error())
+	  c.Redirect(http.StatusFound,utils.CookieFallBackUrl)
 		return
 	}
 
@@ -125,7 +136,7 @@ func CookieRouting(c *gin.Context) {
 	// remove every path from the request
 	redirectUrl := fmt.Sprintf("%s://%s", scheme, c.Request.Host)
 	// set a custom cookie use by traefik
-	c.SetCookie(utils.CookieKey, containerName, utils.CookieMaxAge, "/", c.Request.URL.Hostname(), utils.CookieSecure, utils.CookieHttpOnly)
+	// c.SetCookie(utils.CookieKey, containerName, utils.CookieMaxAge, "/", c.Request.URL.Hostname(), utils.CookieSecure, utils.CookieHttpOnly)
 	c.Redirect(http.StatusFound, redirectUrl)
 
 }
