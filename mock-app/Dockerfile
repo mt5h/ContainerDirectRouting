@@ -31,7 +31,7 @@ COPY --from=base /app/mock-app/_output/mock-app ./
 
 EXPOSE 9000
 
-# HEALTHCHECK --start-period=2s --interval=5s CMD curl -s --fail http://localhost:9000/status || exit 1
+HEALTHCHECK --start-period=2s --interval=5s CMD curl -s --fail http://localhost:9000/status || exit 1
 
 CMD [ "./mock-app" ]
 

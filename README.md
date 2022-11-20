@@ -1,33 +1,14 @@
-## Changelogs
+# ContainerDirectRouting
 
-- This version need a cookie and match that into treafik.
-- Your home app must set a cookie into the client with the name of the instance (Cookie: instace=minion-1)
-- No path matching needed. No rewritring.
-- The examples sets everything up correctly
-- Added the mock-home app to test redirects in case of cookie missing or wrong.
-- In the docker file you can set your app fallback url when the container is missing
-- Support of docker healthcheck, direct http
-- Check traefik route creations
+The spawner is a small wrapper around the docker APIs which is able to manage containers lifecycle.
+When a container is created the HTTP routing is handled by traefik.
+The spawner uses traefik rules to send requests to a specific instance, and it is also able to start stopped container and checks when they are ready to receive requests, redirecting the clients automatically, allowing a better usage of the available resources.
 
-- Test with:
-
-```bash
-./build_project.sh
-docker compose up
-./examples/create-minions-cookie.sh
-./examples/test-minions-cookie.sh
-```
-wait 1 minute and test again
-
-```bash
-./examples/test-minions-cookie.sh
-./examples/delete-minons.sh
-```
-# Application description cookie routing
+# Application description - cookie routing
 
 spawner:
  - Port 8008 -> Create, list and destroy containers
- - Port 8000 -> Accept clients requests and stats stopped containers if the cookie match
+ - Port 8000 -> Accept clients requests and starts stopped containers if the cookie match
 
  mock-app:
  - Port 9000 -> Mocks your app. Has an health-check url to verify availability before redirects clients
@@ -37,19 +18,70 @@ spawner:
 
 # Setup steps
 
-1) Your "Home app" must create the container using the spawner APIs on port 8008 (private API)
-2) The client should have a valid cookie indicating the desired container and call localhost/
-
-3.1) If the container is UP and the cookie is valid traefik performs the routing
-3.2) If the container is DOWN and the cookie is valid the spawner starts the container and redirect the client to localhost/
-3.3) If the client has no cookie or it is invalid, the client is redirected to the Home app at localhost/home 
+- Your "Home app" must create the container using the spawner APIs on port 8008 (private API)
+- The client should have a valid cookie indicating the desired container and call the root of your domain
+  - If the container is UP and the cookie is valid traefik performs the Routing
+  - If the container is DOWN and the cookie is valid the spawner starts the container and redirect the client to localhost/
+  - If the client has no cookie or it is invalid, the client is redirected to the Home app at localhost/home 
 
 
 ## UML API calls scheme
 
 ![umlapi](./docs/images/uml_api_calls.png)
 
-## Architecture Path Routing 
+## Try it
+
+```bash
+
+./build_project.sh
+
+cd ./examples/cookie-routing
+
+docker compose up
+
+./create-minions-cookie.sh
+
+./test-minions-cookie.sh
+```
+wait one minute for the mock-app containers to shutdown and test again
+
+```bash
+./test-minions-cookie.sh
+```
+Container should be started and a redirect sent to the client when the container is available.
+
+As long as you call the mock-app container on / the self-shutdown is delayed 
+
+When you are done testing cleanup the mock-app instances
+```bash
+./delete-minons.sh
+```
+
+### Supported health-check
+- HTTP: the spawner search for a label in your instance container definition called health-check with the value of your app health-check url (see example)
+- Docker: if your app Dockerfile has an HEALTHCHECK definition the spawner will inspect the container to retrive the status
+If you defined both checks the spawner always prefers the Docker ones.
+
+If no health-check mode is available the spawner will sleep for a little before redirects.
+
+By default the spawner checks if traefik has installed a valid route (which also depends from docker HEALTHCHECK if you defined one) otherwise the spawner will stop the container.
+You can disable this feature with the flag
+
+```
+-traefik-check-enabled=false
+```
+
+## Architecture Path Routing (obsolete)
+
+This mode is deprecated. It works but is complex to configure and if the spawned application doesn't handle urls correctly your app routing may result broken.
+
+See the configuration example under ./examples/path-routing
+
+Enable this mode with
+
+```
+spawner -use-path-routing=true
+```
 
 This app spawn multiple instances of the mock-app container and make the direcly reachable trought the traefik proxy.
 In order to do that the mock-app accept requests for a specific path with the container name in it (but can be something else), like this:
@@ -111,7 +143,7 @@ When the stopped container is up again a new (and specific) route is added autom
 
 ```
 
-## How it works
+## Try it
 
 Build mock-app and spawner containers
 clone the git repo
@@ -124,6 +156,7 @@ cd ContainerDirectRouting
 run the docker compose file.
 
 ```
+cd ./examples/path-routing
 docker-compose up
 ```
 This command creates the basic containers (traefik and spawner) in the specified attachable network.
@@ -134,7 +167,6 @@ If you don't demonize the docker-compose run you'll be able to see the predefine
 Move to the examples folder. You can use the curl request as a template to spawn your app with a valid configuration.
 
 ```
-cd examples
 ./create-minions.sh
 ```
 
@@ -163,11 +195,17 @@ or launch again
 ```
 
 The request will hang for a little and then the spawner will redirects you to the correct container. All the other request will work normally.
+
 The health-check internally checks the http://minion-x:9000/status API using the container networking and name resolution system, no ports of the mock-app need to be available outside the docker net.
+
 The only constraint is that you should put the spawner and the mock-app on the same docker network.
+
 If no health-check label is specified during the mock-app instance creation the redirect will wait for 2 seconds (by default), and the HTTP probe will be skipped.
+
 The only endpoint reachable from outside the container network should be the ones mapped in traefik.
+
 The spawner app /deploy API should be private. The /$container-name can be called from the outside to restore the container instance. The following request will be handled directly by the spawned container.
+
 If you want to write your application that intercept the /$container-name requests just make PUT to /deploy/$container-ID to ask the spawner to restart the instace for you (no auto redirect or additional check are performed).
 
 ## Notes:

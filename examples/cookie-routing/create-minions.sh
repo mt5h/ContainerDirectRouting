@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 
-# TODO
-# evaluate the creation of a single middleware
-# can we exclude mininion from the regex?
-
 baseurl='localhost:8008/deploy'
 
 generate_post_data()
