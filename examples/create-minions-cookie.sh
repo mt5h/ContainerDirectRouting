@@ -14,7 +14,7 @@ generate_post_data()
   "network":"traefiknet",
   "image":"mock-app:latest",
   "labels": {
-    "healthcheck": "http:\/\/minion-$1:9000\/status",
+    "health-check": "http:\/\/minion-$1:9000\/status",
     "traefik.enable": "true",
     "traefik.http.routers.minion-$1.entrypoints": "web",
     "traefik.http.routers.minion-$1.rule": "HeadersRegexp(\"Cookie\",\".*instance=minion-$1.*\")"

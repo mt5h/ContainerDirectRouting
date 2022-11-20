@@ -24,7 +24,9 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - "traefiknet"
-    command: ./spawner  -cookie-fallback-url='http://localhost/home'
+    command: ./spawner  -cookie-fallback-url='http://localhost/home' -traefik-check-enabled=true
+    environment:
+      - GIN_MODE=release
     labels:
       traefik.enable: "true"
       traefik.http.routers.spawner.entrypoints: "web"
@@ -35,6 +37,8 @@ services:
     container_name: "mock-home"
     networks:
       - "traefiknet"
+    environment:
+      - GIN_MODE=release
     labels:
       traefik.enable: "true"
       traefik.http.routers.mock-home.entrypoints: "web"

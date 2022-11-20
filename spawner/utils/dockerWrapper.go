@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/network"
@@ -19,11 +21,13 @@ type Instance struct {
 }
 
 type ContainerSummary struct {
-	ContainerID     string
-	ContainerName   string
-	ContainerLabels map[string]string
-	ContainerImage  string
-	ContainerStatus string
+	ContainerID         string            `json:id`
+	ContainerName       string            `json:name`
+	ContainerLabels     map[string]string `json:labels`
+	ContainerImage      string            `json:image`
+	ContainerStatus     string            `json:"status"`
+	ContainerHealth     string            `json:"health,omitempty"`
+	ContainerFailStreak int               `json:"fail-streak,omitempty"`
 }
 
 type InstanceStates struct {
@@ -87,7 +91,7 @@ func CreateContainer(containerInstance Instance) (string, error) {
 	}
 
 	networkConfig.EndpointsConfig[containerInstance.Network] = &network.EndpointSettings{}
-
+  log.Println("Creating container", containerInstance.Name)
 	containerConfig := &container.Config{
 		Hostname: containerInstance.Name,
 		Env:      containerInstance.EnvDockerFormat(),
@@ -164,6 +168,21 @@ func StartContainer(containerId string) error {
 
 }
 
+func StopContainer(containerId string) error {
+
+	ctx := context.Background()
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return err
+	}
+
+	defer cli.Close()
+	if err := cli.ContainerStop(ctx, containerId, nil); err != nil {
+		return err
+	}
+	return err
+
+}
 func GetContainer(containerId string) (ContainerSummary, error) {
 
 	ctx := context.Background()
@@ -179,12 +198,18 @@ func GetContainer(containerId string) (ContainerSummary, error) {
 		return ContainerSummary{}, err
 	}
 
+  // https://github.com/moby/moby/issues/6705
+  // remove the first char of Name 
 	cnt := ContainerSummary{
 		ContainerID:     containerInfo.ID,
-		ContainerName:   containerInfo.Name,
+    ContainerName:   containerInfo.Name[1:],
 		ContainerImage:  containerInfo.Image,
 		ContainerLabels: containerInfo.Config.Labels,
 		ContainerStatus: containerInfo.State.Status,
+	}
+	if containerInfo.State.Health != nil {
+		cnt.ContainerHealth = containerInfo.State.Health.Status
+		cnt.ContainerFailStreak = containerInfo.State.Health.FailingStreak
 	}
 
 	return cnt, nil

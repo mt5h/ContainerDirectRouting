@@ -31,14 +31,14 @@ func DeleteContainer(c *gin.Context) {
 func ListContainers(c *gin.Context) {
 	localContainers, err := utils.ListContainers()
 
-  instances := []utils.ContainerSummary{}
+	instances := []utils.ContainerSummary{}
 
-  for _,cnt := range(localContainers){
-    err := utils.MatchContainerLabel(cnt.ContainerID, "origin", "spawner")
-    if err == nil{
-      instances = append(instances, cnt)
-    }
-  }
+	for _, cnt := range localContainers {
+		err := utils.MatchContainerLabel(cnt.ContainerID, "origin", "spawner")
+		if err == nil {
+			instances = append(instances, cnt)
+		}
+	}
 
 	if err == nil {
 		c.JSON(http.StatusOK, gin.H{"instances": instances})

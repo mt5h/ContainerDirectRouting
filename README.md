@@ -6,6 +6,9 @@
 - The examples sets everything up correctly
 - Added the mock-home app to test redirects in case of cookie missing or wrong.
 - In the docker file you can set your app fallback url when the container is missing
+- Support of docker healthcheck, direct http
+- Check traefik route creations
+
 - Test with:
 
 ```bash
@@ -42,31 +45,9 @@ spawner:
 3.3) If the client has no cookie or it is invalid, the client is redirected to the Home app at localhost/home 
 
 
-# Calls scheme
+## UML API calls scheme
 
-```
-Mock-app exists but is stopped - client cookie is set
-
-client  traefik  spawner   docker  mock-app  mock-home
-
-|           |        |         |         |
-|           |        |         |         |
-|           |        |         |         |
-| cookie set|        |         |         |
-|---------->|------->|         |         |
-|           |        |-------->|         |
-|           |        |         |--start->|
-|           |        |         |         |
-|           |        |---healthcheck---->|
-|           |        |<---200--+---------|
-|           |        |         |         |
-|<--redirect+--------|         |         |
-|           |        |         |         |
-| cookie set|        |         |         |
-|---------->|--------+---------+-------->|
-|           |        |         |         |
-|           |        |         |         |
-```
+![umlapi](./docs/images/uml_api_calls.png)
 
 ## Architecture Path Routing 
 

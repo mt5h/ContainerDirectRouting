@@ -2,20 +2,19 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"log"
 	"spawner/build"
+	"spawner/config"
 	"spawner/controllers"
-	"spawner/utils"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
 
-	utils.LoadFlags()
+	config.LoadFlags()
 	build.LoadInfo()
 
-	if utils.PathRouting == utils.CookieRouting {
+	if config.PathRouting == config.CookieRouting {
 		log.Fatal("Set only one type of routing at the time")
 	}
 
@@ -32,8 +31,8 @@ func main() {
 
 	users := gin.Default()
 	// Path routing
-	if utils.PathRouting {
-		instances := users.Group(fmt.Sprintf("/%s", utils.ContainerPrefix))
+	if config.PathRouting {
+		instances := users.Group(fmt.Sprintf("/%s", config.ContainerPrefix))
 		{
 			instances.GET("/:container-name/*any", controllers.PathRouting)
 			instances.GET("/:container-name", controllers.PathRouting)
@@ -48,7 +47,7 @@ func main() {
 	//    - is invalid -> container doesn't exist -> redirect to the fallback site <- spawner
 	// - request has no cookie:
 	//   - redirect to the fallback url <- spawner
-	if utils.CookieRouting {
+	if config.CookieRouting {
 		instances := users.Group("/")
 		{
 			instances.GET("/*any", controllers.CookieRouting)
