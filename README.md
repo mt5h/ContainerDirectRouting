@@ -24,6 +24,13 @@ spawner:
   - If the container is DOWN and the cookie is valid the spawner starts the container and redirect the client to localhost/
   - If the client has no cookie or it is invalid, the client is redirected to the Home app at localhost/home 
 
+- If you are not using the mock-app container but you want to spawn an image of your choice you need to download it with:
+```
+docker pull my-docker-image
+```
+- If you wanna try this in a browser a cookie is needed to reach a specific instance. With the browser dev-tools add a cookie for localhost with name _instance_ and value _minion-1_ in order to reach the container minion-1.
+
+The spawner does NOT download the docker image for you atm.
 
 ## UML API calls scheme
 

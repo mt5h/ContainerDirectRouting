@@ -44,6 +44,12 @@ services:
       traefik.http.routers.mock-home.entrypoints: "web"
       traefik.http.routers.mock-home.rule: "PathPrefix(`/home`)"
       traefik.http.services.mock-home.loadbalancer.server.port: 8000
+  mongo:
+    image: mongo:4.4
+    networks:
+      - "traefiknet"
+    command: mongod --quiet --logpath /dev/null
+
 networks:
   traefiknet:
     name: traefiknet
