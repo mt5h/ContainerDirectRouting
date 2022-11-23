@@ -20,7 +20,7 @@ const (
 	DockerHC
 )
 
-func CheckTraefickRoute(containerId string) error {
+func CheckTraefikRoute(containerId string) error {
   // get the container status
   instance, err := utils.GetContainer(containerId)
 		if err != nil {
@@ -223,7 +223,7 @@ func CookieRouting(c *gin.Context) {
 	}
 
   if config.TraefikCheckEnabled {
-    if err := CheckTraefickRoute(containerId); err != nil {
+    if err := CheckTraefikRoute(containerId); err != nil {
 		  log.Printf("Request from %s, user agent: %s has the following error:%s\n", c.Request.RemoteAddr, c.Request.UserAgent(), err.Error())
 		  c.Redirect(http.StatusFound, config.CookieFallBackUrl)
 		  return
