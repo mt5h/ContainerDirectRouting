@@ -239,9 +239,8 @@ func CookieRouting(c *gin.Context) {
 	}
 
 	// remove every path from the request
+  // TODO remove c.Request.Host and create a configuration option to statically set the Host
 	redirectUrl := fmt.Sprintf("%s://%s", scheme, c.Request.Host)
-	// set a custom cookie use by traefik
-	// c.SetCookie(utils.CookieKey, containerName, utils.CookieMaxAge, "/", c.Request.URL.Hostname(), utils.CookieSecure, utils.CookieHttpOnly)
 	c.Redirect(http.StatusFound, redirectUrl)
 
 }

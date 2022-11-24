@@ -2,7 +2,7 @@
 
 baseurl='localhost:8008/deploy'
 instance_name='nightscout'
-max=5
+max=2
 
 generate_post_data()
 {
@@ -15,8 +15,9 @@ cat<<EOF
     "health-check": "http:\/\/$instance_name-$i",
     "traefik.enable": "true",
     "traefik.http.services.$instance_name-$1.loadbalancer.server.port": "80",
-    "traefik.http.routers.$instance_name-$1.entrypoints": "web",
-    "traefik.http.routers.$instance_name-$1.rule": "HeadersRegexp(\"Cookie\",\".*instance=$instance_name-$1.*\")"
+    "traefik.http.routers.$instance_name-$1.entrypoints": "websecure",
+    "traefik.http.routers.$instance_name-$1.rule": "HeadersRegexp(\"Cookie\",\".*instance=$instance_name-$1.*\")",
+    "traefik.http.routers.$instance_name-$1.tls": "true"
   },
   "envs": {
       "CUSTOM_TITLE": "nightscout-$1",
@@ -25,7 +26,7 @@ cat<<EOF
 			"PORT": "80",
 			"TZ": "Etc\/UTC",
 			"MONGODB_URI": "mongodb:\/\/mongo:27017\/nightscout-$1",
-			"API_SECRET": "change_me_please-$1",
+			"API_SECRET": "password1234",
 			"ENABLE": "careportal rawbg iob",
 			"AUTH_DEFAULT_ROLES": "readable"	
 	}

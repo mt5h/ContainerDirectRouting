@@ -4,15 +4,24 @@ services:
     image: "traefik:v2.9"
     container_name: "traefik"
     command:
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure  
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https  
+      - --entrypoints.web.forwardedHeaders.insecure=true
+      - --entrypoints.websecure.forwardedHeaders.insecure=true
+      - --entrypoints.websecure.address=:443
+      - --providers.file.directory=/configuration/
+      - --providers.file.watch=true
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik-config/:/configuration/"
     networks:
       - "traefiknet"
   spawner:
@@ -29,7 +38,7 @@ services:
       - GIN_MODE=release
     labels:
       traefik.enable: "true"
-      traefik.http.routers.spawner.entrypoints: "web"
+      traefik.http.routers.spawner.entrypoints: "websecure"
       traefik.http.routers.spawner.rule: "PathPrefix(`/`)"
       traefik.http.services.spawner.loadbalancer.server.port: 8000
   mock-home:
@@ -41,9 +50,11 @@ services:
       - GIN_MODE=release
     labels:
       traefik.enable: "true"
-      traefik.http.routers.mock-home.entrypoints: "web"
+      traefik.http.routers.mock-home.entrypoints: "websecure"
       traefik.http.routers.mock-home.rule: "PathPrefix(`/home`)"
+      traefik.http.routers.mock-home.priority: 99
       traefik.http.services.mock-home.loadbalancer.server.port: 8000
+      traefik.http.routers.mock-home.tls: true
   mongo:
     image: mongo:4.4
     networks:
