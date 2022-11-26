@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 baseurl='localhost:8008/deploy'
-instance_name='nightscout'
-max=5
+instance_name='minion'
+max=2
 
 for i in $(seq 1 $max); do
   response=$(curl -L -s \

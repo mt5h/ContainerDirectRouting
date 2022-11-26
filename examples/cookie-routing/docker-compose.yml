@@ -33,21 +33,22 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
     networks:
       - "traefiknet"
-    command: ./spawner  -cookie-fallback-url='http://localhost/home' -traefik-check-enabled=true
+    command: ./spawner -cookie-fallback-url='https://localhost/home' -traefik-check-enabled=true
     environment:
-      - GIN_MODE=release
+      - GIN_MODE=debug
     labels:
       traefik.enable: "true"
       traefik.http.routers.spawner.entrypoints: "websecure"
       traefik.http.routers.spawner.rule: "PathPrefix(`/`)"
       traefik.http.services.spawner.loadbalancer.server.port: 8000
+      traefik.http.routers.spawner.tls: true
   mock-home:
     image: "mock-home:latest"
     container_name: "mock-home"
     networks:
       - "traefiknet"
     environment:
-      - GIN_MODE=release
+      - GIN_MODE=debug
     labels:
       traefik.enable: "true"
       traefik.http.routers.mock-home.entrypoints: "websecure"
@@ -55,12 +56,6 @@ services:
       traefik.http.routers.mock-home.priority: 99
       traefik.http.services.mock-home.loadbalancer.server.port: 8000
       traefik.http.routers.mock-home.tls: true
-  mongo:
-    image: mongo:4.4
-    networks:
-      - "traefiknet"
-    command: mongod --quiet --logpath /dev/null
-
 networks:
   traefiknet:
     name: traefiknet

@@ -50,7 +50,8 @@ func main() {
 	if config.CookieRouting {
 		instances := users.Group("/")
 		{
-			instances.GET("/*any", controllers.CookieRouting)
+      //instances.GET("", controllers.CookieRouting)
+			instances.GET("*any", controllers.CookieRouting)
 		}
 	}
 

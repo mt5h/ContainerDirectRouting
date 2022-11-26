@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 baseurl='localhost:8008/deploy'
-instance_name='nightscout'
+instance_name='minion'
+image='mock-app:latest'
+
 max=2
 
 generate_post_data()
@@ -10,25 +12,19 @@ cat<<EOF
 {
   "name":"$instance_name-$1",
   "network":"traefiknet",
-  "image":"nightscout/cgm-remote-monitor:latest",
+  "image":"$image",
   "labels": {
-    "health-check": "http:\/\/$instance_name-$i",
+    "health-check": "http:\/\/$instance_name-$i:9000\/status",
     "traefik.enable": "true",
-    "traefik.http.services.$instance_name-$1.loadbalancer.server.port": "80",
+    "traefik.http.services.$instance_name-$1.loadbalancer.server.port": "9000",
     "traefik.http.routers.$instance_name-$1.entrypoints": "websecure",
     "traefik.http.routers.$instance_name-$1.rule": "HeadersRegexp(\"Cookie\",\".*instance=$instance_name-$1.*\")",
     "traefik.http.routers.$instance_name-$1.tls": "true"
   },
   "envs": {
-      "CUSTOM_TITLE": "nightscout-$1",
-			"INSECURE_USE_HTTP": "true",
-			"NODE_ENV": "production",
-			"PORT": "80",
 			"TZ": "Etc\/UTC",
-			"MONGODB_URI": "mongodb:\/\/mongo:27017\/nightscout-$1",
-			"API_SECRET": "password1234",
-			"ENABLE": "careportal rawbg iob",
-			"AUTH_DEFAULT_ROLES": "readable"	
+      "CONNSTR":"db $1",
+      "IDLE":"1m"
 	}
 }
 EOF
