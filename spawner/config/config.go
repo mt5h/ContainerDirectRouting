@@ -19,6 +19,10 @@ var TraefikCheckEnabled bool
 var TraefikBaseUrl string
 var TraefikPlatform string
 
+var EnableMgMtAuth bool
+var UsersPassFile string
+var TokenExpireTime time.Duration
+var TokenCleanUpLoop time.Duration
 func LoadFlags() {
 
 	flag.BoolVar(&PathRouting, "use-path-routing", false, "Route to your spawned container using request path (see container prefix)")
@@ -34,6 +38,10 @@ func LoadFlags() {
   flag.StringVar(&TraefikBaseUrl, "traefik-base-url", "http://traefik:8080", "The traefick api endpoint")
   flag.StringVar(&TraefikPlatform, "traefik-platform", "docker", "The traefick endpoint tipe eg spawner@docker")
   flag.BoolVar(&TraefikCheckEnabled, "traefik-check-enabled", true, "Enable checking traefick route before redirect")
+  flag.BoolVar(&EnableMgMtAuth, "enable-mgmt-auth", true, "Enable management APIs authentication")
+  flag.StringVar(&UsersPassFile, "userspass-file", "/passwd.txt", "The file that contains user a passwords sha256 hashes")
+  flag.DurationVar(&TokenExpireTime, "token-expire-time", 60 * time.Minute, "The validity time of a token")
+  flag.DurationVar(&TokenCleanUpLoop, "token-cleanup-interval", 60 * time.Minute, "Time between expired token eviction")
   flag.Parse()
 
 }

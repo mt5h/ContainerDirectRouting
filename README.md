@@ -259,6 +259,24 @@ origin:spawner
 ```
 This allow us to manage only the containers created by the spawner itself. 
 
+# How to create a password file 
+
+The userspass file is a simple list of
+
+```
+username,sha256(password)
+username,sha256(password)
+username,sha256(password)
+```
+
+You can use the passwd.txt file as an example
+
+How to generate a password file
+
+```
+PASS=$(echo -n "superpass" | sha256sum  | cut -d " " -f 1); echo "bob,$PASS" >> ./passwd.txt
+```
+
 
 
 

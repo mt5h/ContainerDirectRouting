@@ -31,9 +31,10 @@ services:
       - "8008:8008"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./passwd.txt:/passwd.txt"
     networks:
       - "traefiknet"
-    command: ./spawner -cookie-fallback-url='https://localhost/home' -traefik-check-enabled=true
+    command: ./spawner -cookie-fallback-url='https://localhost/home' -traefik-check-enabled=true --userspass-file=/passwd.txt -enable-mgmt-auth=true
     environment:
       - GIN_MODE=debug
     labels:

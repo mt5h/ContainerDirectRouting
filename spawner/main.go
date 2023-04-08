@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
+  "spawner/utils"
+  "spawner/sessions"
 	"spawner/build"
 	"spawner/config"
 	"spawner/controllers"
 )
+
 
 func main() {
 
@@ -19,10 +22,27 @@ func main() {
 	}
 
 	management := gin.Default()
+  /////////////////////////////////////////////////////////////	
 
+  sessions.TokenCache = utils.NewTokenSessions()
+  sessions.TokenCache.SetValidity(config.TokenExpireTime)
+  sessions.TokenCache.StartMaintenance(config.TokenCleanUpLoop)
+
+  sessions.LsDB = utils.NewLoginStore()
+	sessions.LsDB.ReadPasswordsFile(config.UsersPassFile)
+
+	public := management.Group("/login")
+  {
+    public.POST("", controllers.Login)
+
+  }
+
+  /////////////////////////////////////////////////////////////
 	// management endpoint
 	provisioning := management.Group("/deploy")
+  provisioning.Use(utils.SimpleAuth(sessions.TokenCache, config.EnableMgMtAuth))
 	{
+    
 		provisioning.POST("/", controllers.CreateContainer)
 		provisioning.GET("/", controllers.ListContainers)
 		provisioning.PUT("/:container-id", controllers.StartContainer)

@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-baseurl='localhost:8008/deploy'
 instance_name='minion'
 image='mock-app:latest'
 
@@ -31,11 +30,18 @@ EOF
 }
 
 
+
+baseurl='localhost:8008'
+
+TOKEN=$(curl -s -d '{"username":"foo", "password":"bar"}' -H 'Content-Type: application/json' -X POST ${baseurl}/login | jq ".token" | sed 's/"//g')
+
 for i in $(seq 1 $max); do 
-response=$(curl -L -s --header "Content-Type: application/json" \
+response=$(curl -L -s \
+    --header "Content-Type: application/json" \
+    --header "token: $TOKEN" \
      -X POST \
      --data  "$(generate_post_data $i)" \
-     ${baseurl}/
+     ${baseurl}/deploy
    )
 
   if command -v jq > /dev/null 2>&1; then

@@ -1,12 +1,8 @@
 #!/usr/bin/env bash
 
-baseurl='localhost:8008/deploy'
+baseurl='localhost:8008'
 
-response="$(curl -s ${baseurl}/ )"
+TOKEN=$(curl -s -d '{"username":"foo", "password":"bar"}' -H 'Content-Type: application/json' -X POST ${baseurl}/login | jq ".token" | sed 's/"//g')
 
-if command -v jq; then
-  echo $response | jq
-else
-  echo "Install jq for a better output"
-  echo $response
-fi
+curl -L -s --header "token: $TOKEN" ${baseurl}/deploy/ | jq
+
